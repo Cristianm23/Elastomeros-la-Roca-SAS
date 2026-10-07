@@ -1,0 +1,12 @@
+<?php
+
+namespace App\Modules\Products\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class ProductSpecification extends Model
+{
+    protected $fillable = ['product_id', 'name', 'value', 'unit', 'sort_order'];
+    public function product(): BelongsTo { return $this->belongsTo(Product::class); }
+}
