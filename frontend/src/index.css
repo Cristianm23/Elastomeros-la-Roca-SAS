@@ -5,9 +5,51 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  --ds-bg: #f4f6f2;
+  --ds-surface: #ffffff;
+  --ds-surface-muted: #e8eee8;
+  --ds-text: #183c32;
+  --ds-text-muted: #53635e;
+  --ds-border: #cbd5cc;
+  --ds-accent: #bd7035;
+  --ds-focus: #2e7d65;
+  --ds-danger: #a33333;
+  --ds-success: #216b4d;
+  --ds-shadow: 0 16px 40px rgba(24, 60, 50, .12);
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; min-width: 320px; }
 a { color: inherit; }
+button, input, select, textarea { font: inherit; }
+:focus-visible { outline: 3px solid var(--ds-focus); outline-offset: 3px; }
+
+html[data-theme="dark"] {
+  --ds-bg: #15211d;
+  --ds-surface: #1d2e28;
+  --ds-surface-muted: #263c34;
+  --ds-text: #edf5ed;
+  --ds-text-muted: #c1d0c6;
+  --ds-border: #476257;
+  --ds-accent: #e5aa72;
+  --ds-focus: #93d8ba;
+  --ds-danger: #ff9b9b;
+  --ds-success: #8ed2ae;
+  --ds-shadow: 0 16px 40px rgba(0, 0, 0, .3);
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+    --ds-bg: #15211d;
+    --ds-surface: #1d2e28;
+    --ds-surface-muted: #263c34;
+    --ds-text: #edf5ed;
+    --ds-text-muted: #c1d0c6;
+    --ds-border: #476257;
+    --ds-accent: #e5aa72;
+    --ds-focus: #93d8ba;
+    --ds-danger: #ff9b9b;
+    --ds-success: #8ed2ae;
+  }
+}

@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use App\Modules\Administration\Models\AuditLog;
 
 class AuthController extends Controller
 {
@@ -31,6 +32,7 @@ class AuthController extends Controller
             ? now()->addDays(30)
             : now()->addHours(2);
         $token = $user->createToken($credentials['device_name'] ?? 'api-client', ['*'], $expiresAt)->plainTextToken;
+        AuditLog::create(['user_id' => $user->id, 'action' => 'auth.login', 'ip_address' => $request->ip()]);
 
         return response()->json([
             'data' => [

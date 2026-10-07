@@ -11,7 +11,7 @@ class QuoteResource extends JsonResource
     {
         return [
             'reference' => $this->public_reference,
-            'status' => $this->status,
+            'status' => $this->status instanceof \BackedEnum ? $this->status->value : $this->status,
             'items' => $this->whenLoaded('items', fn () => $this->items->map(fn ($item) => [
                 'description' => $item->description,
                 'quantity' => $item->quantity,

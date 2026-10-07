@@ -5,7 +5,9 @@ namespace App\Modules\Quotes\Services;
 use App\Modules\Products\Models\Product;
 use App\Modules\Quotes\Models\Quote;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
+use App\Notifications\QuoteReceivedNotification;
 
 class QuoteService
 {
@@ -19,6 +21,10 @@ class QuoteService
                 'contact_name' => $data['contact_name'],
                 'email' => $data['email'],
                 'phone' => $data['phone'] ?? null,
+                'city' => $data['city'],
+                'required_date' => $data['required_date'],
+                'observations' => $data['observations'] ?? null,
+                'attachment_path' => isset($data['attachment']) ? $data['attachment']->store('quotes', 'local') : null,
                 'message' => $data['message'] ?? null,
                 'status' => 'pending',
                 'source_ip' => $sourceIp,
@@ -33,7 +39,11 @@ class QuoteService
             })->all();
 
             $quote->items()->createMany($items);
-            return $quote->load('items');
+            $quote = $quote->load('items');
+            Notification::route('mail', $quote->email)->notify(new QuoteReceivedNotification($quote));
+            Notification::route('mail', config('mail.sales_address'))->notify(new QuoteReceivedNotification($quote, true));
+
+            return $quote;
         });
     }
 }

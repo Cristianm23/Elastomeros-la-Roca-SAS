@@ -115,4 +115,6 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    'sales_address' => env('SALES_NOTIFICATION_EMAIL', 'comercial@elastomeroslaroca.com'),
+
 ];

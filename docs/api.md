@@ -149,13 +149,16 @@ Payload:
   "phone": "+57 300 000 0000",
   "subject": "Consulta técnica",
   "message": "Necesito información sobre sus soluciones.",
-  "consent": true
+  "consent": true,
+  "website": ""
 }
 ```
 
 `name`, `email`, `subject`, `message` y `consent` son obligatorios.
-`consent` debe ser `true`. Responde `201` con el identificador y estado del
-mensaje.
+`consent` debe ser `true`. `website` es un campo honeypot que debe permanecer
+vacío. Responde `201` con el identificador y estado del mensaje. La confirmación
+al cliente y la notificación interna se envían mediante Laravel Notifications
+encoladas.
 
 ## Cotizaciones
 
@@ -171,7 +174,11 @@ Payload:
   "contact_name": "Carlos Gómez",
   "email": "carlos@empresa.co",
   "phone": "+57 300 000 0000",
-  "message": "Requerimos una cotización.",
+  "city": "Bogotá",
+  "required_date": "2026-11-15",
+  "observations": "Requerimos una cotización.",
+  "consent": true,
+  "website": "",
   "items": [
     {
       "product_id": 1,
@@ -186,10 +193,38 @@ Payload:
 }
 ```
 
-`company_name`, `contact_name`, `email` y al menos un `items` son obligatorios.
-Cada ítem debe indicar un `product_id` existente o una `description`, y la
-cantidad debe ser un entero entre 1 y 100000. Responde `201` con una referencia
-pública `COT-...`; nunca expone el correo, IP ni datos internos.
+Para archivos use `multipart/form-data` y el campo `attachment`. Se aceptan
+PDF, documentos Office e imágenes JPG/PNG/WebP hasta 10 MB; el MIME se valida
+en backend. `company_name`, `contact_name`, `email`, `city`, `required_date`,
+`consent` y al menos un `items` son obligatorios. Cada ítem debe indicar un
+`product_id` existente o una `description`, y la cantidad debe ser un entero
+entre 1 y 100000. La fecha requerida no puede ser anterior a hoy.
+
+Los estados de una cotización son `pending`, `reviewing`, `quoted`, `accepted`,
+`rejected`, `completed` y `cancelled`. Responde `201` con una referencia pública
+`COT-...`; nunca expone el correo, IP, ruta del archivo ni datos internos. Al
+crear la solicitud se envían confirmaciones encoladas al cliente y al correo
+comercial configurado en `SALES_NOTIFICATION_EMAIL`.
+
+## Administración
+
+Todas las rutas administrativas requieren `Authorization: Bearer <token>` y
+el permiso correspondiente. Los permisos se validan en middleware Laravel.
+
+- `GET /admin/dashboard`: métricas y actividad reciente (`users.view`).
+- `GET /admin/quotes`: búsqueda por referencia/empresa/correo y filtro por estado (`quotes.view`).
+- `GET /admin/quotes/{id}`: detalle con ítems y asignación (`quotes.view`).
+- `PATCH /admin/quotes/{id}`: estado, asignación y notas (`quotes.update`).
+- `GET /admin/contacts`: mensajes recibidos (`users.view`).
+- `GET /admin/products`, `/categories`, `/services`: listados administrativos.
+- `POST`, `PATCH`, `DELETE /admin/{type}`: CRUD de catálogo (`products.create/update/delete`).
+- `GET/POST/DELETE /admin/content/{type}`: FAQ, testimonios y blog.
+- `GET /admin/users`, `/roles`, `/activity`: administración y auditoría.
+- `PATCH /admin/users/{id}/roles`: asignación de roles (`users.manage`).
+- `PATCH /admin/roles/{id}/permissions`: asignación de permisos (`users.manage`).
+
+Los cambios de contenido, cotizaciones, permisos y login generan registros en
+`audit_logs`.
 
 ## Desarrollo y base de datos
 

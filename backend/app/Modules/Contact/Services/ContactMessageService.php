@@ -3,16 +3,23 @@
 namespace App\Modules\Contact\Services;
 
 use App\Modules\Contact\Models\ContactMessage;
+use App\Notifications\ContactReceivedNotification;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Notification;
 
 class ContactMessageService
 {
     public function create(array $data): ContactMessage
     {
-        return ContactMessage::create([
+        $message = ContactMessage::create([
             ...$data,
             'consent_at' => Carbon::now(),
             'status' => 'unread',
         ]);
+
+        Notification::route('mail', $message->email)->notify(new ContactReceivedNotification($message));
+        Notification::route('mail', config('mail.sales_address'))->notify(new ContactReceivedNotification($message, true));
+
+        return $message;
     }
 }

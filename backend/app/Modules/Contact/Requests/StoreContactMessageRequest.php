@@ -18,6 +18,7 @@ class StoreContactMessageRequest extends FormRequest
             'subject' => ['required', 'string', 'max:180'],
             'message' => ['required', 'string', 'max:5000'],
             'consent' => ['required', 'accepted'],
+            'website' => ['nullable', 'max:0'],
         ];
     }
 }

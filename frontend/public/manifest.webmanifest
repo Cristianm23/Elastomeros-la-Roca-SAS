@@ -1,0 +1,13 @@
+{
+  "name": "Elastómeros La Roca",
+  "short_name": "La Roca",
+  "description": "Soluciones técnicas en caucho y elastómeros.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f1eb",
+  "theme_color": "#183c32",
+  "lang": "es-CO",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
