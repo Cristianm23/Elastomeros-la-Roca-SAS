@@ -3,25 +3,34 @@ import type { ReactNode } from 'react'
 import { Alert, Button, Card, Input, Select, Textarea } from '../components/ui'
 import { adminApi } from '../services/admin'
 
-type Section = 'dashboard' | 'quotes' | 'contacts' | 'products' | 'categories' | 'services' | 'faqs' | 'testimonials' | 'blog' | 'users' | 'activity'
-const sections: Array<[Section, string]> = [['dashboard','Resumen'], ['quotes','Cotizaciones'], ['contacts','Contactos'], ['products','Productos'], ['categories','Categorías'], ['services','Servicios'], ['faqs','FAQ'], ['testimonials','Testimonios'], ['blog','Blog'], ['users','Usuarios'], ['activity','Auditoría']]
+type Section = 'dashboard' | 'analytics' | 'quotes' | 'contacts' | 'products' | 'categories' | 'services' | 'faqs' | 'testimonials' | 'blog' | 'users' | 'activity'
+const sections: Array<[Section, string]> = [['dashboard','Resumen'], ['analytics','Analytics'], ['quotes','Cotizaciones'], ['contacts','Contactos'], ['products','Productos'], ['categories','Categorías'], ['services','Servicios'], ['faqs','FAQ'], ['testimonials','Testimonios'], ['blog','Blog'], ['users','Usuarios'], ['activity','Auditoría']]
 
 export function AdminPage() {
   const [section, setSection] = useState<Section>('dashboard')
   const [data, setData] = useState<any>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
-  useEffect(() => { setLoading(true); setError(''); const load: () => Promise<any> = section === 'dashboard' ? adminApi.dashboard : section === 'quotes' ? adminApi.quotes : section === 'contacts' ? adminApi.contacts : section === 'users' ? adminApi.users : section === 'activity' ? adminApi.activity : ['faqs','testimonials','blog'].includes(section) ? () => adminApi.content(section) : () => adminApi.catalog(section); load().then(setData).catch((e: Error) => setError(e.message)).finally(() => setLoading(false)) }, [section])
+  useEffect(() => { setLoading(true); setError(''); const load: () => Promise<any> = section === 'dashboard' ? adminApi.dashboard : section === 'analytics' ? adminApi.analytics : section === 'quotes' ? adminApi.quotes : section === 'contacts' ? adminApi.contacts : section === 'users' ? adminApi.users : section === 'activity' ? adminApi.activity : ['faqs','testimonials','blog'].includes(section) ? () => adminApi.content(section) : () => adminApi.catalog(section); load().then(setData).catch((e: Error) => setError(e.message)).finally(() => setLoading(false)) }, [section])
   return <div className="admin-shell"><aside className="admin-sidebar"><div className="admin-brand">LR <span>Administración</span></div><nav aria-label="Administración">{sections.map(([id, label]) => <button className={section === id ? 'is-active' : ''} onClick={() => setSection(id)} key={id}>{label}</button>)}</nav></aside><main className="admin-main"><header className="admin-header"><div><p className="eyebrow">Panel administrativo</p><h1>{sections.find(([id]) => id === section)?.[1]}</h1></div><span className="admin-secure">Acceso protegido</span></header>{loading && <p className="admin-loading">Cargando información…</p>}{error && <Alert title="No se pudo cargar el panel" tone="danger">{error} Verifica tu token y permisos.</Alert>}{!loading && !error && <AdminContent section={section} data={data} onRefresh={() => setSection(section)} />}</main></div>
 }
 
 function AdminContent({ section, data, onRefresh }: { section: Section; data: any; onRefresh: () => void }) {
   if (section === 'dashboard') return <div className="admin-cards">{[['Cotizaciones', data.data.quotes], ['Pendientes', data.data.pending_quotes], ['Contactos', data.data.contacts], ['Productos', data.data.products], ['Usuarios', data.data.users]].map(([label, value]) => <Card title={String(label)} key={String(label)}><strong className="admin-number">{String(value)}</strong></Card>)}<Card title="Actividad reciente"><ul className="admin-activity">{data.data.activity.map((item: any) => <li key={item.id}>{item.action} · {item.created_at}</li>)}</ul></Card></div>
+  if (section === 'analytics') return <AnalyticsSummary data={data.data} />
   if (section === 'quotes') return <QuoteTable data={data.data?.data || []} onRefresh={onRefresh} />
   if (section === 'contacts') return <SimpleTable rows={data.data?.data || []} columns={['name','company_name','subject','status','created_at']} />
   if (section === 'users') return <SimpleTable rows={data.data?.data || []} columns={['name','email','company_name','roles']} />
   if (section === 'activity') return <SimpleTable rows={data.data?.data || []} columns={['action','auditable_type','ip_address','created_at']} />
   return <ContentManager section={section} rows={data.data?.data || []} onRefresh={onRefresh} />
+}
+
+function AnalyticsSummary({ data }: { data: any }) {
+  return <div className="admin-cards">
+    <Card title="Eventos registrados"><SimpleTable rows={data.totals} columns={['event_name', 'total']} /></Card>
+    <Card title="Productos con más interés"><SimpleTable rows={data.products} columns={['product_slug', 'total']} /></Card>
+    <Card title="Errores recientes"><SimpleTable rows={data.recent.filter((item: any) => ['frontend_error', 'api_failure'].includes(item.event_name))} columns={['event_name', 'path', 'created_at']} /></Card>
+  </div>
 }
 
 function QuoteTable({ data, onRefresh }: { data: any[]; onRefresh: () => void }) {

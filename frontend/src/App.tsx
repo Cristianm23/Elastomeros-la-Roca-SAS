@@ -1,4 +1,5 @@
 import './App.css'
+import { useEffect } from 'react'
 import { DesignSystemPage } from './pages/DesignSystemPage'
 import { AdminPage } from './pages/AdminPage'
 import { PublicLayout } from './components/public/PublicLayout'
@@ -7,6 +8,7 @@ import {
   AboutPage, CategoriesPage, CategoryDetailPage, ContactPage, FaqPage, HomePage,
   LegalPage, ProductDetailPage, ProductsPage, QuotePage, ServiceDetailPage, ServicesPage,
 } from './pages/PublicPages'
+import { trackEvent } from './services/analytics'
 
 function PublicRouter() {
   const path = window.location.pathname.replace(/\/+$/, '') || '/'
@@ -27,6 +29,9 @@ function PublicRouter() {
 }
 
 function App() {
+  useEffect(() => {
+    trackEvent('page_view')
+  }, [])
   if (window.location.pathname === '/admin') return <AdminPage />
   if (window.location.pathname === '/design-system') return <DesignSystemPage />
   return <PublicLayout><ConnectivityBanner /><PublicRouter /></PublicLayout>

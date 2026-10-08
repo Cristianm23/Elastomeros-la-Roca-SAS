@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { categories, products, services } from '../data/catalog'
 import type { Product } from '../data/catalog'
@@ -8,6 +8,7 @@ import { Link } from '../components/public/RouterLink'
 import { Seo } from '../components/public/Seo'
 import { submitContactMessage } from '../services/contact'
 import { submitQuoteRequest } from '../services/quotes'
+import { trackEvent } from '../services/analytics'
 
 const quoteMinimumDate = new Date().toISOString().split('T')[0]
 
@@ -34,11 +35,17 @@ function ProductCard({ product }: { product: Product }) { return <Link className
 export function ProductsPage() {
   const [search, setSearch] = useState(''); const [category, setCategory] = useState('')
   const filtered = useMemo(() => products.filter((product) => (!category || product.categorySlug === category) && `${product.name} ${product.description}`.toLowerCase().includes(search.toLowerCase())), [category, search])
+  useEffect(() => {
+    if (search.trim()) trackEvent('search', { properties: { query_length: search.trim().length, result_count: filtered.length } })
+  }, [filtered.length, search])
   return <><Seo title="Productos" description="Catálogo de productos técnicos en caucho y elastómeros de Elastómeros La Roca." /><main className="public-main"><PageIntro eyebrow="Catálogo técnico" title="Productos para que su operación siga avanzando." description="Explore nuestra selección de componentes elastoméricos. Si no encuentra exactamente lo que necesita, podemos desarrollar una alternativa a medida." /><section className="catalog-section"><div className="catalog-filters"><Input label="Buscar producto" placeholder="Ej. sello, manguera..." value={search} onChange={(event) => setSearch(event.target.value)} /><Select label="Filtrar por categoría" value={category} onChange={(event) => setCategory(event.target.value)} options={categories.map((item) => ({ value: item.slug, label: item.name }))} /></div><p className="results-count">{filtered.length} productos encontrados</p><div className="product-grid">{filtered.map((product) => <ProductCard product={product} key={product.slug} />)}</div>{filtered.length === 0 && <Alert title="No encontramos resultados">Prueba otra búsqueda o solicita una solución personalizada.</Alert>}</section><Cta /></main></>
 }
 
 export function ProductDetailPage({ slug }: { slug: string }) {
   const product = products.find((item) => item.slug === slug)
+  useEffect(() => {
+    if (product) trackEvent('product_view', { product_slug: product.slug })
+  }, [product])
   if (!product) return <NotFound />
   return <><Seo title={product.name} description={product.description} /><main className="public-main"><div className="detail-page"><p className="eyebrow"><Link href="/productos">Productos</Link> / {product.category}</p><div className="product-detail"><div className="product-detail-art" style={{ background: product.accent }}><span>{product.category}</span><b>LR</b></div><div><h1>{product.name}</h1><p className="detail-lead">{product.description}</p><Link className="button button-primary" href={`/cotizacion?producto=${product.slug}`}>Solicitar cotización ↗</Link><div className="spec-table"><h2>Especificaciones</h2>{product.specifications.map(([name, value]) => <div key={name}><span>{name}</span><strong>{value}</strong></div>)}</div></div></div></div><Cta /></main></>
 }
@@ -85,6 +92,9 @@ export function QuotePage() {
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  useEffect(() => {
+    trackEvent('quote_started', { product_slug: initialProduct || undefined })
+  }, [initialProduct])
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const formElement = event.currentTarget
@@ -101,6 +111,7 @@ export function QuotePage() {
         required_date: String(form.get('required_date') || ''),
         observations: String(form.get('observations') || ''),
         product: products.find((product) => product.slug === form.get('product'))?.name || String(form.get('product') || ''),
+        product_slug: String(form.get('product') || '') || undefined,
         quantity: String(form.get('quantity') || ''),
         attachment: form.get('attachment') instanceof File ? form.get('attachment') as File : undefined,
         website: String(form.get('website') || ''),

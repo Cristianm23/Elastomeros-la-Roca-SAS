@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use App\Notifications\QuoteReceivedNotification;
+use App\Modules\Analytics\Models\AnalyticsEvent;
 
 class QuoteService
 {
@@ -40,6 +41,11 @@ class QuoteService
 
             $quote->items()->createMany($items);
             $quote = $quote->load('items');
+            AnalyticsEvent::create([
+                'user_id' => $userId,
+                'event_name' => 'quote_submitted',
+                'product_slug' => $data['product_slug'] ?? null,
+            ]);
             Notification::route('mail', $quote->email)->notify(new QuoteReceivedNotification($quote));
             Notification::route('mail', config('mail.sales_address'))->notify(new QuoteReceivedNotification($quote, true));
 

@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /cotizacion
+
+Sitemap: https://www.elastomeroslaroca.com/sitemap.xml

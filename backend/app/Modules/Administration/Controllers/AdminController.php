@@ -9,6 +9,9 @@ use App\Modules\Administration\Models\BlogPost;
 use App\Modules\Administration\Models\Faq;
 use App\Modules\Administration\Models\Testimonial;
 use App\Modules\Administration\Services\AuditService;
+use App\Modules\Analytics\Models\AnalyticsEvent;
+use App\Notifications\QuoteStatusChangedNotification;
+use Illuminate\Support\Facades\Notification;
 use App\Modules\Categories\Models\Category;
 use App\Modules\Contact\Models\ContactMessage;
 use App\Modules\Products\Models\Product;
@@ -51,6 +54,10 @@ class AdminController extends Controller
     {
         $data = $request->validate(['status' => ['sometimes', 'in:pending,reviewing,quoted,accepted,rejected,completed,cancelled'], 'assigned_to' => ['nullable', 'exists:users,id'], 'admin_notes' => ['nullable', 'string', 'max:5000']]);
         $old = $quote->only(array_keys($data)); $quote->update($data); $this->audit->record('quote.updated', $quote, $old, $quote->only(array_keys($data)), $request);
+        $oldStatus = $old['status'] instanceof QuoteStatus ? $old['status']->value : $old['status'];
+        if ($quote->user && isset($data['status']) && $oldStatus !== $data['status']) {
+            Notification::send($quote->user, new QuoteStatusChangedNotification($quote->fresh()));
+        }
         return response()->json(['data' => $quote->fresh(['items', 'assignee'])]);
     }
 
@@ -72,6 +79,19 @@ class AdminController extends Controller
         return response()->json(['data' => $role->fresh('permissions')]);
     }
     public function activity(): JsonResponse { return response()->json(['data' => AuditLog::with('user')->latest()->paginate(30)]); }
+
+    public function analytics(Request $request): JsonResponse
+    {
+        $since = $request->date('since')?->startOfDay() ?? now()->subDays(30);
+        $events = AnalyticsEvent::query()->where('created_at', '>=', $since);
+
+        return response()->json(['data' => [
+            'since' => $since->toDateString(),
+            'totals' => (clone $events)->selectRaw('event_name, count(*) as total')->groupBy('event_name')->orderByDesc('total')->get(),
+            'products' => (clone $events)->where('event_name', 'product_view')->whereNotNull('product_slug')->selectRaw('product_slug, count(*) as total')->groupBy('product_slug')->orderByDesc('total')->limit(20)->get(),
+            'recent' => (clone $events)->latest()->limit(50)->get(['event_name', 'path', 'product_slug', 'properties', 'created_at']),
+        ]]);
+    }
 
     public function content(Request $request, string $type): JsonResponse
     {

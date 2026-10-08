@@ -27,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('quotes', fn (Request $request) => Limit::perMinute(5)->by($request->ip()));
         RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)->by($request->ip()));
         RateLimiter::for('register', fn (Request $request) => Limit::perMinute(3)->by($request->ip()));
+        RateLimiter::for('analytics', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
         Gate::before(fn ($user, string $ability) => $user->roles()->where('slug', 'admin')->exists() ? true : null);
     }
 }

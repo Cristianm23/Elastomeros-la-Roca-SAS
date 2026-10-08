@@ -1,21 +1,25 @@
 :root {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #1d2926;
-  background: #f4f6f2;
+  color: #111827;
+  background: #f7f9fc;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  --ds-bg: #f4f6f2;
+  --ds-bg: #f7f9fc;
   --ds-surface: #ffffff;
-  --ds-surface-muted: #e8eee8;
-  --ds-text: #183c32;
-  --ds-text-muted: #53635e;
-  --ds-border: #cbd5cc;
-  --ds-accent: #bd7035;
-  --ds-focus: #2e7d65;
-  --ds-danger: #a33333;
-  --ds-success: #216b4d;
-  --ds-shadow: 0 16px 40px rgba(24, 60, 50, .12);
+  --ds-surface-muted: #e8f0f8;
+  --ds-text: #111827;
+  --ds-text-muted: #526579;
+  --ds-border: #c8d5e3;
+  --ds-primary: #1f4f82;
+  --ds-secondary: #ffffff;
+  --ds-tertiary: #111827;
+  --ds-quaternary: #e53935;
+  --ds-accent: var(--ds-primary);
+  --ds-focus: #2d6aa3;
+  --ds-danger: #e53935;
+  --ds-success: #237a4b;
+  --ds-shadow: 0 16px 40px rgba(31, 79, 130, .16);
 }
 
 * { box-sizing: border-box; }
@@ -26,30 +30,38 @@ button, input, select, textarea { font: inherit; }
 :focus-visible { outline: 3px solid var(--ds-focus); outline-offset: 3px; }
 
 html[data-theme="dark"] {
-  --ds-bg: #15211d;
-  --ds-surface: #1d2e28;
-  --ds-surface-muted: #263c34;
-  --ds-text: #edf5ed;
-  --ds-text-muted: #c1d0c6;
-  --ds-border: #476257;
-  --ds-accent: #e5aa72;
-  --ds-focus: #93d8ba;
+  --ds-bg: #0d1b2a;
+  --ds-surface: #142b46;
+  --ds-surface-muted: #1d3b5c;
+  --ds-text: #f4f8fc;
+  --ds-text-muted: #c5d5e6;
+  --ds-border: #496b8f;
+  --ds-primary: #5f95cc;
+  --ds-secondary: #142b46;
+  --ds-tertiary: #f4f8fc;
+  --ds-quaternary: #ff6b66;
+  --ds-accent: var(--ds-primary);
+  --ds-focus: #8db9e2;
   --ds-danger: #ff9b9b;
-  --ds-success: #8ed2ae;
+  --ds-success: #86d5a4;
   --ds-shadow: 0 16px 40px rgba(0, 0, 0, .3);
 }
 
 @media (prefers-color-scheme: dark) {
   html:not([data-theme="light"]) {
-    --ds-bg: #15211d;
-    --ds-surface: #1d2e28;
-    --ds-surface-muted: #263c34;
-    --ds-text: #edf5ed;
-    --ds-text-muted: #c1d0c6;
-    --ds-border: #476257;
-    --ds-accent: #e5aa72;
-    --ds-focus: #93d8ba;
+    --ds-bg: #0d1b2a;
+    --ds-surface: #142b46;
+    --ds-surface-muted: #1d3b5c;
+    --ds-text: #f4f8fc;
+    --ds-text-muted: #c5d5e6;
+    --ds-border: #496b8f;
+      --ds-primary: #5f95cc;
+      --ds-secondary: #142b46;
+      --ds-tertiary: #f4f8fc;
+      --ds-quaternary: #ff6b66;
+      --ds-accent: var(--ds-primary);
+    --ds-focus: #8db9e2;
     --ds-danger: #ff9b9b;
-    --ds-success: #8ed2ae;
+    --ds-success: #86d5a4;
   }
 }

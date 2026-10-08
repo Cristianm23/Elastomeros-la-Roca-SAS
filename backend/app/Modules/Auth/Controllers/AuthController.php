@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use App\Modules\Administration\Models\AuditLog;
+use App\Modules\Analytics\Models\AnalyticsEvent;
 
 class AuthController extends Controller
 {
@@ -33,6 +34,7 @@ class AuthController extends Controller
             : now()->addHours(2);
         $token = $user->createToken($credentials['device_name'] ?? 'api-client', ['*'], $expiresAt)->plainTextToken;
         AuditLog::create(['user_id' => $user->id, 'action' => 'auth.login', 'ip_address' => $request->ip()]);
+        AnalyticsEvent::create(['user_id' => $user->id, 'event_name' => 'login']);
 
         return response()->json([
             'data' => [
@@ -61,6 +63,7 @@ class AuthController extends Controller
         });
 
         $token = $user->createToken($data['device_name'] ?? 'api-client', ['*'], now()->addHours(2))->plainTextToken;
+        AnalyticsEvent::create(['user_id' => $user->id, 'event_name' => 'register']);
 
         return response()->json([
             'data' => [

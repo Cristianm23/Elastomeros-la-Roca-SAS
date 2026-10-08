@@ -17,6 +17,7 @@ export const adminApi = {
   contacts: () => request('/contacts'),
   users: () => request('/users'),
   activity: () => request('/activity'),
+  analytics: () => request('/analytics'),
   catalog: (type: string) => request(`/${type}`),
   saveCatalog: (type: string, data: object) => request(`/${type}`, { method: 'POST', body: JSON.stringify(data) }),
   content: (type: string) => request(`/content/${type}`),

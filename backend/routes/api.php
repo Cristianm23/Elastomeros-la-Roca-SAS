@@ -9,6 +9,7 @@ use App\Modules\Quotes\Controllers\QuoteController;
 use App\Modules\Services\Controllers\ServiceController;
 use App\Modules\Administration\Controllers\AdminController;
 use App\Modules\Administration\Controllers\AdminCatalogController;
+use App\Modules\Analytics\Controllers\AnalyticsController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -16,6 +17,7 @@ Route::prefix('v1')->group(function (): void {
     Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
     Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:login');
     Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:login');
+    Route::post('analytics/events', [AnalyticsController::class, 'store'])->middleware('throttle:analytics');
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('auth/me', [AuthController::class, 'me']);
         Route::post('auth/logout', [AuthController::class, 'logout']);
@@ -32,6 +34,7 @@ Route::prefix('v1')->group(function (): void {
             Route::patch('users/{user}/roles', [AdminController::class, 'updateUserRoles'])->middleware('permission:users.manage');
             Route::patch('roles/{role}/permissions', [AdminController::class, 'updateRolePermissions'])->middleware('permission:users.manage');
             Route::get('activity', [AdminController::class, 'activity'])->middleware('permission:users.view');
+            Route::get('analytics', [AdminController::class, 'analytics'])->middleware('permission:users.view');
             Route::get('content/{type}', [AdminController::class, 'content'])->middleware('permission:products.view');
             Route::post('content/{type}', [AdminController::class, 'saveContent'])->middleware('permission:products.update');
             Route::delete('content/{type}/{id}', [AdminController::class, 'deleteContent'])->middleware('permission:products.delete');

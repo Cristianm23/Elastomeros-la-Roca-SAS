@@ -7,11 +7,13 @@ type QuotePayload = {
   required_date: string
   observations: string
   product: string
+  product_slug?: string
   quantity: string
   attachment?: File
   website: string
   consent: boolean
 }
+import { reportFrontendError } from './observability'
 
 const apiUrl = import.meta.env.VITE_API_URL || '/api'
 
@@ -26,6 +28,7 @@ export async function submitQuoteRequest(payload: QuotePayload): Promise<void> {
   body.append('observations', payload.observations)
   body.append('website', payload.website)
   body.append('consent', payload.consent ? '1' : '0')
+  if (payload.product_slug) body.append('product_slug', payload.product_slug)
   body.append('items[0][description]', payload.product)
   body.append('items[0][quantity]', payload.quantity)
   if (payload.attachment) body.append('attachment', payload.attachment)
@@ -37,6 +40,7 @@ export async function submitQuoteRequest(payload: QuotePayload): Promise<void> {
   })
 
   if (!response.ok) {
+    reportFrontendError(new Error(`Quote API ${response.status}`), 'api_failure')
     const data = await response.json().catch(() => null) as { message?: string } | null
     throw new Error(data?.message || 'No fue posible enviar la solicitud de cotización.')
   }
